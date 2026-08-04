@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react';
 // emptyOutDir: false로 header.js를 지우지 않는다.
 export default defineConfig({
   plugins: [react()],
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  },
   build: {
     outDir: 'dist/v1',
     emptyOutDir: false,
