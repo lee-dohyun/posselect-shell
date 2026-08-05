@@ -2,7 +2,6 @@ import { createRoot } from 'react-dom/client';
 import { Header } from './components/Header';
 import { SHELL_CSS } from './styles';
 
-const DEFAULT_HOME_HREF = 'https://home.posselect.com';
 const DEFAULT_SEARCH_HREF = 'https://product.posselect.com';
 const DEFAULT_AUTH_API_BASE = 'https://customer.posselect.com';
 const DEFAULT_CART_API_BASE = 'https://product.posselect.com';
@@ -29,7 +28,6 @@ class PosselectHeaderElement extends HTMLElement {
 
     createRoot(mountPoint).render(
       <Header
-        homeHref={attr(this, 'home-href', DEFAULT_HOME_HREF)}
         searchHref={attr(this, 'search-href', DEFAULT_SEARCH_HREF)}
         authApiBase={attr(this, 'auth-api-base', DEFAULT_AUTH_API_BASE)}
         cartApiBase={attr(this, 'cart-api-base', DEFAULT_CART_API_BASE)}

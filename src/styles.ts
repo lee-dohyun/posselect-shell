@@ -31,6 +31,8 @@ a { text-decoration: none; }
   display: flex; align-items: center; gap: var(--space-8);
   padding: var(--space-4) var(--space-6);
 }
+.site-header-logo-link { display: flex; flex-shrink: 0; align-items: center; }
+.site-header-logo { height: 26px; width: auto; display: block; }
 /* min-width: 0 overrides the flex item default (min-width: auto), which would
    otherwise size this to its content's min-content width and force the row to
    overflow instead of shrinking — that overflow was pushing .site-header-actions

@@ -1,5 +1,4 @@
 import { FormEvent, useEffect, useState } from 'react';
-import { Logo } from '@posselect/ui';
 
 interface HeaderCategory {
   id: number;
@@ -9,12 +8,23 @@ interface HeaderCategory {
 }
 
 interface HeaderProps {
-  homeHref: string;
   searchHref: string;
   categoriesApiBase: string;
   authApiBase: string;
   cartApiBase: string;
 }
+
+// 로고는 어느 호스트 앱(customer/product/admin/home.front)에 박혀있든 항상 홈으로 보내야 하므로
+// 호스트가 넘기는 속성이 아니라 상수로 고정한다 — 예전엔 product.front/home.front가 각자
+// home-href="/"를 넘겨서 로고를 누르면 자기 자신의 루트로만 갔었다(의도와 다른 동작).
+const HOME_URL = 'https://home.posselect.com';
+
+// MinIO shop-images 버킷(private)에 원본을 두고, image.posselect.com(imgproxy) 뒤에서 리사이징해
+// 서빙한다. imgproxy는 서명 없는 요청을 거부하므로 이 URL은 IMGPROXY_KEY/SALT로 미리 서명해둔
+// 고정 URL이다(서명에 만료 시각이 없어 재생성 불필요) — 로고 이미지를 교체할 때는 같은 키
+// (brand/posselect-logo.png)로 덮어쓰기만 하면 이 URL 그대로 새 이미지를 받아온다.
+const LOGO_URL =
+  'https://image.posselect.com/iuuE7fLcayc6Eoa5QtbP-LjJCiSRK9slj8rw_CuIy-k/rs:fit:300:90:0/plain/s3://shop-images/brand/posselect-logo.png';
 
 interface AuthMe {
   name?: string | null;
@@ -30,7 +40,7 @@ interface Cart {
  * 서버 컴포넌트가 아니라 이 컴포넌트 자신이 카테고리/로그인/장바구니를 전부 절대 URL로 직접
  * fetch한다 — 빌드 타임 결합이 전혀 없어야 스크립트 태그 하나로 완결되는 배포가 된다.
  */
-export function Header({ homeHref, searchHref, categoriesApiBase, authApiBase, cartApiBase }: HeaderProps) {
+export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase }: HeaderProps) {
   const [categories, setCategories] = useState<HeaderCategory[]>([]);
   const [user, setUser] = useState<AuthMe | null>(null);
   const [cartCount, setCartCount] = useState(0);
@@ -116,8 +126,8 @@ export function Header({ homeHref, searchHref, categoriesApiBase, authApiBase, c
           </svg>
         </button>
 
-        <a href={homeHref} aria-label="PosSelect 홈">
-          <Logo size={26} />
+        <a href={HOME_URL} className="site-header-logo-link" aria-label="PosSelect 홈">
+          <img src={LOGO_URL} alt="PosSelect" className="site-header-logo" />
         </a>
 
         <div className="site-header-search">
