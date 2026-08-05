@@ -31,13 +31,17 @@ a { text-decoration: none; }
   display: flex; align-items: center; gap: var(--space-8);
   padding: var(--space-4) var(--space-6);
 }
-.site-header-search { flex: 1; max-width: 520px; }
+/* min-width: 0 overrides the flex item default (min-width: auto), which would
+   otherwise size this to its content's min-content width and force the row to
+   overflow instead of shrinking — that overflow was pushing .site-header-actions
+   off-screen on narrow viewports. */
+.site-header-search { flex: 1; min-width: 0; max-width: 520px; }
 .site-header-search-box {
-  display: flex; align-items: center; height: 44px;
+  display: flex; align-items: center; height: 44px; min-width: 0;
   border: 1.5px solid var(--color-accent); border-radius: var(--radius-sm);
 }
 .site-header-search-box input {
-  border: none; height: 100%; flex: 1; font-size: 14px; padding: 0 var(--space-4);
+  border: none; height: 100%; flex: 1; min-width: 0; font-size: 14px; padding: 0 var(--space-4);
   background: transparent; color: var(--color-text); font-family: inherit;
 }
 .site-header-search-box input:focus-visible { outline: none; }
@@ -49,7 +53,7 @@ a { text-decoration: none; }
 }
 .site-header-search-box button:hover { background: var(--color-accent-600); }
 
-.site-header-actions { display: flex; gap: 4px; margin-left: auto; }
+.site-header-actions { display: flex; flex-shrink: 0; gap: 4px; margin-left: auto; }
 .site-header-action {
   position: relative; display: flex; flex-direction: column; align-items: center; gap: 2px;
   width: 56px; height: 52px; border: none; background: none; cursor: pointer;
@@ -87,7 +91,7 @@ a { text-decoration: none; }
   .site-header-action span.label { display: none; }
   .site-header-action { width: 40px; }
   .site-header-menu-toggle {
-    display: flex; align-items: center; justify-content: center;
+    display: flex; flex-shrink: 0; align-items: center; justify-content: center;
     width: 40px; height: 40px; border: none; background: none; cursor: pointer; order: -1;
   }
   .site-header-categories {

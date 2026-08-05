@@ -3,6 +3,29 @@
 posselect 쇼핑몰(customer.front / home.front / product.front)이 공통으로 쓰는 상단 Header / 하단
 Footer를 **독립 배포되는 런타임 마이크로프론트엔드**로 서빙하는 저장소.
 
+## 반응형(Responsive) 구현은 필수
+
+이 저장소가 서빙하는 Header/Footer는 `customer`/`home`/`product`/`admin` 4개 프론트 전체가 공유하는
+**단일 진입점**이라, 여기서 반응형이 깨지면 posselect 전 서비스의 모바일 화면이 동시에 깨진다.
+**새로 만들거나 수정하는 마크업/스타일은 전부 최소 320px ~ 데스크톱까지 레이아웃이 깨지지 않아야
+하며, 이는 선택 사항이 아니라 병합 조건이다.**
+
+- **회귀 사례 (2026-08-05)**: `.site-header-search`가 `flex: 1`만 있고 `min-width: 0`이 없어서,
+  flex 아이템의 기본값(`min-width: auto`)이 검색창 내부 콘텐츠의 min-content 폭을 강제해버렸다.
+  그 결과 좁은 화면(375px)에서 `.site-header-main`이 컨테이너 폭(356px)보다 넓은 실제 콘텐츠
+  (538px)를 갖게 됐고, `overflow: hidden` 없이 `margin-left: auto`로 오른쪽에 붙어 있던
+  `.site-header-actions`(찜/마이페이지/장바구니 아이콘)가 뷰포트 밖으로 완전히 밀려나 **보이지도
+  클릭되지도 않는 상태**가 됐다 — `@media (max-width: 768px)` 규칙 자체는 있었는데도 발생한
+  문제라, "미디어쿼리가 있으니 반응형"이라고 착각하면 안 된다. `min-width: 0`을 shrink 가능한
+  flex 아이템에, `flex-shrink: 0`을 고정폭으로 유지해야 하는 아이템(`.site-header-actions`,
+  `.site-header-menu-toggle`)에 명시해서 해결(`src/styles.ts`).
+- **검증 방법**: 실제 배포된 페이지는 Shadow DOM 안에 있어서 브라우저 창을 그냥 줄이는 것만으론
+  DevTools 디바이스 툴바가 아닐 경우 놓치기 쉽다. 코드 리뷰 시 `min-width`/`flex-shrink`가 빠진
+  flex 아이템이 있는지부터 의심하고, 실기기 또는 실제 뷰포트 폭을 갖는 `<iframe>`(윈도우 리사이즈가
+  아니라 iframe 자체 폭)으로 320/375/768px 각각에서 모든 헤더/푸터 요소(아이콘, 카테고리 메뉴,
+  검색창)가 화면 안에 그대로 보이고 클릭 가능한지 눈으로 확인할 것 — `scrollWidth > clientWidth`
+  여부를 JS로 찍어보는 것도 빠른 회귀 감지법이다.
+
 ## 왜 posselect-ui가 아니라 별도 저장소인가
 
 `@posselect/ui`(posselect-ui 저장소)는 토큰/Button/Card/Tag/Nav/Logo 같은 **순수 디자인 요소**만
@@ -49,9 +72,13 @@ URL 경로에 메이저 버전을 박는다: `/v1/header.js`. `v1` 안에서의 
 경로 대신 자기 origin을 그대로 넘겨도 되고, 기본값을 그대로 둬도 크로스 도메인으로 정상 동작한다
 (CORS는 auth.api/product-api 양쪽에 `https://*.posselect.com` 허용 완료).
 
+두 컴포넌트 모두 320px(가장 좁은 실사용 모바일 기준) ~ 데스크톱 전 구간에서 요소가 잘리거나
+뷰포트 밖으로 밀려나지 않아야 한다 — 위 "반응형(Responsive) 구현은 필수" 섹션 참고.
+
 ### `<posselect-footer>`
 
-속성 없음 — 완전 정적.
+속성 없음 — 완전 정적. 링크 그룹(`.site-footer-links`)은 `flex-wrap: wrap`으로 좁은 화면에서
+자연스럽게 줄바꿈되도록 되어 있음 — 새 링크 그룹을 추가할 때 이 wrap 동작을 깨뜨리지 말 것.
 
 ## 호스트 앱에서 쓰는 법
 
@@ -105,12 +132,26 @@ Shadow DOM으로 캡슐화한다 — 호스트 페이지의 CSS와 절대 충돌
 경계를 통과해 상속되므로, 호스트가 이미 `import '@posselect/ui/tokens.css'`를 하고 있다면
 그 값 그대로 테마가 맞춰진다(이 저장소는 색상 값을 직접 정의하지 않는다).
 
+**반응형 필수 (`src/styles.ts`)**: 새 flex/grid 레이아웃을 추가할 때마다 아래를 기본으로 챙길 것.
+- 폭이 줄어들어야 하는 아이템(검색창, 텍스트 컨테이너 등)에는 `min-width: 0`을 명시 — flex
+  아이템의 기본값 `min-width: auto`가 콘텐츠의 min-content 폭을 강제해 형제 요소를 밀어내는
+  게 이 저장소에서 실제로 발생한 회귀 원인이다(위 "회귀 사례" 참고).
+- 고정폭을 유지해야 하는 아이템(아이콘 그룹, 로고, 토글 버튼 등)에는 `flex-shrink: 0`을 명시.
+- 새 브레이크포인트가 필요하면 기존 `@media (max-width: 768px)` 패턴을 재사용하되, 768px
+  구간만으로 충분한지 320px 근처까지 반드시 재확인할 것 — 미디어쿼리가 하나 있다고 반응형이
+  보장되지 않는다.
+
 ## 로컬 빌드
 
 ```bash
 npm install
 npm run build   # dist/v1/header.js, dist/v1/footer.js
 ```
+
+빌드 후 배포 전 반드시 320/375/768px 폭에서 Header/Footer의 모든 요소(아이콘, 메뉴, 검색창,
+링크 그룹)가 잘리거나 뷰포트 밖으로 밀려나지 않는지 눈으로 확인할 것 — 위 "반응형(Responsive)
+구현은 필수" 섹션 참고. 이 저장소는 단일 진입점이라 여기서 놓친 반응형 버그는 전 프론트로
+동시에 퍼진다.
 
 ## 배포
 
