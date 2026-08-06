@@ -45,7 +45,10 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
   const [user, setUser] = useState<AuthMe | null>(null);
   const [cartCount, setCartCount] = useState(0);
   const [checked, setChecked] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
+  // 쿠팡의 "카테고리" 버튼처럼 좌측 플라이아웃 패널을 여닫는 상태. 모바일/데스크톱 동일하게
+  // 이 패널 하나로 처리한다 — 하위 카테고리(2뎁스) 데이터가 아직 없어서(product-api의
+  // /api/categories가 평면 목록만 반환) 패널 안에서는 1뎁스 목록만 보여준다.
+  const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
 
   useEffect(() => {
     fetch(`${categoriesApiBase}/api/categories`)
@@ -109,21 +112,27 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
         )}
         <a href="https://customer.posselect.com/mypage">주문조회</a>
         <a href="https://customer.posselect.com/mypage">고객센터</a>
+        {/* 알림/최근 본 상품: 백엔드가 없어 클릭해도 아무 동작이 없는 비활성 표시만 유지한다
+            (진짜 링크로 두면 404로 튕겨나가므로 span + aria-disabled로 "미구현" 상태를 명시). */}
+        <span className="disabled" aria-disabled="true" title="준비 중인 기능입니다">
+          최근 본 상품
+        </span>
       </div>
 
       <div className="site-header-main">
         <button
           type="button"
-          className="site-header-menu-toggle"
-          aria-label="카테고리 메뉴"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((v) => !v)}
+          className="site-header-category-toggle"
+          aria-label="전체 카테고리"
+          aria-expanded={categoryMenuOpen}
+          onClick={() => setCategoryMenuOpen((v) => !v)}
         >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="6" x2="21" y2="6"></line>
             <line x1="3" y1="12" x2="21" y2="12"></line>
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
+          <span className="site-header-category-toggle-label">카테고리</span>
         </button>
 
         <a href={HOME_URL} className="site-header-logo-link" aria-label="PosSelect 홈">
@@ -149,6 +158,21 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
             </svg>
             <span className="label">찜</span>
           </a>
+          {/* 알림: 아직 알림 발송/조회 API가 없어 배지 없이 비활성 상태로만 노출 (버튼이지만
+              disabled 처리해 클릭해도 아무 반응이 없다). */}
+          <button
+            type="button"
+            className="site-header-action"
+            disabled
+            aria-label="알림"
+            title="준비 중인 기능입니다"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.7 21a2 2 0 0 1-3.4 0"></path>
+            </svg>
+            <span className="label">알림</span>
+          </button>
           <a className="site-header-action" href="https://customer.posselect.com/mypage" aria-label="마이페이지">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="8" r="4"></circle>
@@ -168,7 +192,7 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
         </div>
       </div>
 
-      <nav className={`site-header-categories ${menuOpen ? 'open' : ''}`} aria-label="카테고리">
+      <nav className="site-header-categories" aria-label="카테고리">
         <a href={searchHref} aria-current="page">
           전체카테고리
         </a>
@@ -178,6 +202,38 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
           </a>
         ))}
       </nav>
+
+      {categoryMenuOpen && (
+        <>
+          <div className="site-header-category-overlay" onClick={() => setCategoryMenuOpen(false)} />
+          <div className="site-header-category-panel" role="dialog" aria-label="전체 카테고리">
+            <div className="site-header-category-panel-head">
+              <span>전체 카테고리</span>
+              <button type="button" aria-label="닫기" onClick={() => setCategoryMenuOpen(false)}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+            {/* product-api의 /api/categories가 아직 평면(1뎁스) 목록만 제공해서, 실제 쿠팡처럼
+                호버 시 우측에 하위 카테고리를 보여주는 2단 구성은 데이터가 갖춰진 뒤로 미룬다.
+                지금은 1뎁스 목록만 노출하되 각 항목에 화살표(›)를 붙여 "하위 카테고리가 곧
+                추가될 구조"라는 의도만 시각적으로 남겨둔다. */}
+            <ul className="site-header-category-panel-list">
+              {categories.length === 0 && <li className="empty">카테고리를 불러오는 중입니다</li>}
+              {categories.map((c) => (
+                <li key={c.id}>
+                  <a href={c.href}>
+                    <span>{c.name}</span>
+                    <span aria-hidden="true">›</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
+      )}
     </header>
   );
 }

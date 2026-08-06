@@ -26,10 +26,19 @@ a { text-decoration: none; }
   background: none; border: none; padding: 0; font: inherit; color: inherit; cursor: pointer;
 }
 .site-header-utility button.link:hover { color: var(--color-accent); }
+.site-header-utility span.disabled { color: var(--color-neutral-400); cursor: default; }
 
 .site-header-main {
-  display: flex; align-items: center; gap: var(--space-8);
+  display: flex; align-items: center; gap: var(--space-6);
   padding: var(--space-4) var(--space-6);
+}
+.site-header-category-toggle {
+  display: flex; flex-shrink: 0; align-items: center; gap: 6px;
+  height: 40px; padding: 0 var(--space-3); border: 1px solid var(--color-divider); border-radius: var(--radius-sm);
+  background: none; cursor: pointer; font: inherit; font-size: 13.5px; color: var(--color-text);
+}
+.site-header-category-toggle:hover, .site-header-category-toggle[aria-expanded='true'] {
+  border-color: var(--color-accent); color: var(--color-accent);
 }
 .site-header-logo-link { display: flex; flex-shrink: 0; align-items: center; }
 .site-header-logo { height: 26px; width: auto; display: block; }
@@ -63,6 +72,8 @@ a { text-decoration: none; }
 }
 .site-header-action:hover, .site-header-action:focus-visible { color: var(--color-accent); }
 .site-header-action svg { display: block; }
+.site-header-action:disabled { cursor: default; opacity: 0.45; }
+.site-header-action:disabled:hover { color: var(--color-neutral-700); }
 .site-header-action-badge {
   display: inline-flex; align-items: center; font-size: 10px; letter-spacing: 0.02em;
   background: var(--color-accent-100); color: var(--color-accent-800);
@@ -85,23 +96,43 @@ a { text-decoration: none; }
 }
 .site-header-categories a.highlight { color: var(--color-highlight-700); font-weight: 600; }
 
-.site-header-menu-toggle { display: none; }
+/* 쿠팡의 좌측 "카테고리" 플라이아웃과 동일한 패턴: 오버레이로 배경을 덮고, 고정폭 패널을
+   헤더 아래쪽에서 화면 하단까지 채운다. 모바일/데스크톱 공통 마크업이라 미디어쿼리 없이도
+   그대로 동작한다. */
+.site-header-category-overlay {
+  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); z-index: 1000;
+}
+.site-header-category-panel {
+  position: fixed; top: 0; left: 0; bottom: 0; width: min(320px, 84vw);
+  background: var(--color-bg); z-index: 1001; overflow-y: auto;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+  display: flex; flex-direction: column;
+}
+.site-header-category-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-divider);
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 15px;
+}
+.site-header-category-panel-head button {
+  border: none; background: none; cursor: pointer; color: var(--color-neutral-700); display: flex;
+}
+.site-header-category-panel-list { list-style: none; margin: 0; padding: var(--space-2) 0; }
+.site-header-category-panel-list li.empty {
+  padding: var(--space-4) var(--space-5); color: var(--color-neutral-400); font-size: 13px;
+}
+.site-header-category-panel-list a {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-3) var(--space-5); color: var(--color-text); font-size: 14px;
+}
+.site-header-category-panel-list a:hover { background: var(--color-neutral-100); color: var(--color-accent); }
 
 @media (max-width: 768px) {
   .site-header-utility { gap: var(--space-4); padding: var(--space-2) var(--space-4); font-size: 11px; }
   .site-header-main { padding: var(--space-3) var(--space-4); gap: var(--space-3); }
   .site-header-action span.label { display: none; }
   .site-header-action { width: 40px; }
-  .site-header-menu-toggle {
-    display: flex; flex-shrink: 0; align-items: center; justify-content: center;
-    width: 40px; height: 40px; border: none; background: none; cursor: pointer; order: -1;
-  }
-  .site-header-categories {
-    display: none; flex-direction: column; align-items: flex-start; gap: 0;
-    overflow-x: visible; border-top: 1px solid var(--color-divider);
-  }
-  .site-header-categories.open { display: flex; }
-  .site-header-categories a { width: 100%; padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-divider); margin-bottom: 0; }
+  .site-header-category-toggle-label { display: none; }
+  .site-header-category-toggle { width: 40px; padding: 0; justify-content: center; }
 }
 
 .site-footer { border-top: 1px solid var(--color-divider); background: var(--color-bg); font-size: 13px; }
@@ -131,16 +162,30 @@ a { text-decoration: none; }
   padding: var(--space-4) var(--space-6); flex-wrap: wrap;
 }
 .site-footer-copyright { font-size: 11px; color: var(--color-neutral-700); }
+.site-footer-social { display: flex; gap: var(--space-2); }
+.site-footer-social .icon-btn {
+  display: flex; align-items: center; justify-content: center; width: 26px; height: 26px;
+  border-radius: 50%; border: 1px solid var(--color-divider); color: var(--color-neutral-400); cursor: default;
+}
 .site-footer-payments { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .site-footer .tag {
   display: inline-flex; align-items: center; font-size: 11px; letter-spacing: 0.02em;
   padding: 3px 10px; border-radius: calc(var(--radius-md) * 0.75);
   border: 1px solid var(--color-accent); color: var(--color-accent);
 }
+.site-footer-app {
+  display: flex; gap: var(--space-2); padding: 0 var(--space-6) var(--space-6);
+}
+.site-footer-app .badge {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 11px; cursor: default;
+  padding: 6px 12px; border-radius: var(--radius-sm); border: 1px solid var(--color-divider);
+  color: var(--color-neutral-400);
+}
 
 @media (max-width: 768px) {
   .site-footer-top { padding: var(--space-6) var(--space-4); gap: var(--space-6); }
   .site-footer-links { gap: var(--space-6); width: 100%; }
   .site-footer-bottom { padding: var(--space-4); justify-content: flex-start; }
+  .site-footer-app { padding: 0 var(--space-4) var(--space-4); }
 }
 `;

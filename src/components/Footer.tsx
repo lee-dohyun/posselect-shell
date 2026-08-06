@@ -41,6 +41,7 @@ export function Footer() {
               </a>
               <a href="https://home.posselect.com/shipping">배송/교환/반품 안내</a>
               <a href="https://home.posselect.com/youth-policy">청소년보호정책</a>
+              <a href="https://home.posselect.com/safe-trade">안전거래센터</a>
             </div>
           </div>
           <div>
@@ -49,6 +50,7 @@ export function Footer() {
               <a href="https://home.posselect.com/about">회사 소개</a>
               <a href="https://home.posselect.com/careers">채용</a>
               <a href="https://home.posselect.com/partners">입점 문의</a>
+              <a href="https://home.posselect.com/ads">광고 문의</a>
             </div>
           </div>
         </div>
@@ -56,6 +58,28 @@ export function Footer() {
 
       <div className="site-footer-bottom">
         <div className="site-footer-copyright">© {year} PosSelect Corp. All rights reserved.</div>
+        {/* SNS/앱 다운로드: 실제 채널/앱이 없어 클릭해도 아무 데도 안 가는 비활성 표시만 유지한다
+            (진짜 링크로 두면 404로 튕겨나가므로 span + aria-disabled로 "미구현" 상태를 명시). */}
+        <div className="site-footer-social">
+          <span className="icon-btn" aria-disabled="true" title="준비 중">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <rect x="2" y="2" width="20" height="20" rx="5"></rect>
+              <circle cx="12" cy="12" r="4.2"></circle>
+              <circle cx="17.4" cy="6.6" r="1"></circle>
+            </svg>
+          </span>
+          <span className="icon-btn" aria-disabled="true" title="준비 중">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <path d="M14 9V6a2 2 0 0 1 2-2h2V1h-3a5 5 0 0 0-5 5v3H7v3h3v10h4V12h3l1-3h-4z"></path>
+            </svg>
+          </span>
+          <span className="icon-btn" aria-disabled="true" title="준비 중">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <rect x="2" y="4" width="20" height="16" rx="3"></rect>
+              <polygon points="10 9 15 12 10 15" fill="currentColor" stroke="none"></polygon>
+            </svg>
+          </span>
+        </div>
         <div className="site-footer-payments">
           <span className="tag">VISA</span>
           <span className="tag">Mastercard</span>
@@ -63,6 +87,15 @@ export function Footer() {
           <span className="tag">네이버페이</span>
           <span className="tag">무통장입금</span>
         </div>
+      </div>
+
+      <div className="site-footer-app">
+        <span className="badge" aria-disabled="true" title="준비 중">
+          App Store
+        </span>
+        <span className="badge" aria-disabled="true" title="준비 중">
+          Google Play
+        </span>
       </div>
     </footer>
   );
