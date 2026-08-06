@@ -19,12 +19,12 @@ interface HeaderProps {
 // home-href="/"를 넘겨서 로고를 누르면 자기 자신의 루트로만 갔었다(의도와 다른 동작).
 const HOME_URL = 'https://home.posselect.com';
 
-// MinIO shop-images 버킷(private)에 원본을 두고, image.posselect.com(imgproxy) 뒤에서 리사이징해
-// 서빙한다. imgproxy는 서명 없는 요청을 거부하므로 이 URL은 IMGPROXY_KEY/SALT로 미리 서명해둔
-// 고정 URL이다(서명에 만료 시각이 없어 재생성 불필요) — 로고 이미지를 교체할 때는 같은 키
-// (brand/posselect-logo.png)로 덮어쓰기만 하면 이 URL 그대로 새 이미지를 받아온다.
-const LOGO_URL =
-  'https://image.posselect.com/iuuE7fLcayc6Eoa5QtbP-LjJCiSRK9slj8rw_CuIy-k/rs:fit:300:90:0/plain/s3://shop-images/brand/posselect-logo.png';
+// cdn 버킷(프로덕션 브랜드 자산)의 파일을 image.posselect.com/cdn/<key> 짧은 경로로 참조한다 —
+// cdn-alias nginx(minio 네임스페이스)가 이 경로를 실제 imgproxy 서명 URL로 302 리다이렉트해준다
+// (~/msa/imgproxy/cdn-alias/). 이전엔 shop-images 버킷에 직접 만든 서명 URL을 썼으나, 정식
+// cdn 버킷/별칭 체계가 갖춰지면서 이쪽으로 통일함 — 로고 파일을 바꿀 때는 cdn 버킷의
+// logos/posselect-logo-hires-no-r.webp를 교체하면 이 URL 그대로 새 이미지를 받아온다.
+const LOGO_URL = 'https://image.posselect.com/cdn/logos/posselect-logo-hires-no-r.webp';
 
 interface AuthMe {
   name?: string | null;

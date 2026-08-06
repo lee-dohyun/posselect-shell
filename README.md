@@ -77,14 +77,15 @@ URL 경로에 메이저 버전을 박는다: `/v1/header.js`. `v1` 안에서의 
 동작이 실제로 있었다. 로고 클릭 목적지가 호스트마다 달라지는 걸 원천 차단하기 위해
 `src/components/Header.tsx`의 `HOME_URL` 상수로 고정했고, `home-href` attribute는 더 이상
 읽지 않는다(넘겨도 조용히 무시됨 — 커스텀 엘리먼트 특성상 에러는 안 남). 로고 자체도 더는
-SVG 컴포넌트가 아니라 `<img>` 태그로, MinIO `shop-images` 버킷(private)에 올려둔 원본을
-`image.posselect.com`(imgproxy, HMAC 서명 필요) 경유로 가져온다 — 서명은 `IMGPROXY_KEY`/
-`IMGPROXY_SALT`로 미리 만들어 `Header.tsx`의 `LOGO_URL` 상수에 고정해뒀다(서명에 만료 시각이
-없어 매 요청 재서명 불필요, imgproxy 자체가 30일 캐시). 로고 이미지를 교체하려면 같은 키
-(`brand/posselect-logo.png`)로 덮어써야 `LOGO_URL`을 그대로 재사용할 수 있고, 리사이징 옵션
-(`rs:fit:300:90:0`) 등 서명 대상 경로 자체를 바꾸려면 새 서명을 다시 계산해야 한다(imgproxy
-파드에 주입된 시크릿으로 HMAC-SHA256 계산 — 이 저장소 자체엔 서명 스크립트를 두지 않았다,
-필요 시 `~/msa/imgproxy/imgproxy-main.yaml`의 시크릿을 참조하는 임시 파드에서 계산할 것).
+SVG 컴포넌트가 아니라 `<img>` 태그로, MinIO `cdn` 버킷(프로덕션 브랜드 자산)의
+`logos/posselect-logo-hires-no-r.webp`를 `image.posselect.com/cdn/<key>` 짧은 경로로 가져온다
+(2026-08-06, 이전엔 `shop-images` 버킷에 직접 만든 imgproxy 서명 URL을 썼으나 정식 `cdn`
+버킷/별칭 체계로 통일함). `image.posselect.com/cdn/*`는 `cdn-alias` nginx(`minio` 네임스페이스,
+`~/msa/imgproxy/cdn-alias/`)가 실제 imgproxy 서명 URL로 302 리다이렉트해주는 별칭 경로라 —
+`Header.tsx`의 `LOGO_URL` 상수는 서명을 신경 쓸 필요 없이 그냥 이 짧은 경로를 가리킨다. 로고
+이미지를 교체하려면 `cdn` 버킷의 `logos/posselect-logo-hires-no-r.webp`를 같은 키로 덮어쓰면
+되고, 아예 다른 파일(다른 키)을 쓰려면 `cdn-alias/generate-cdn-alias-conf.sh`를 재실행해서
+새 키에 대한 별칭을 생성해야 한다(버킷에 파일을 추가/삭제할 때마다 필요한 절차).
 
 두 컴포넌트 모두 320px(가장 좁은 실사용 모바일 기준) ~ 데스크톱 전 구간에서 요소가 잘리거나
 뷰포트 밖으로 밀려나지 않아야 한다 — 위 "반응형(Responsive) 구현은 필수" 섹션 참고.
