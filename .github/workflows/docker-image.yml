@@ -47,4 +47,4 @@ jobs:
       - name: Wait for rollout
         run: |
           /usr/local/bin/kubectl --kubeconfig=/home/leedohyun/.kube-ci/posselect-shell-deployer.kubeconfig \
-            rollout status deployment/posselect-shell -n default --timeout=120s
+            rollout status deployment/posselect-shell -n default --timeout=300s
