@@ -151,9 +151,23 @@ Shadow DOM으로 캡슐화한다 — 호스트 페이지의 CSS와 절대 충돌
   아이템의 기본값 `min-width: auto`가 콘텐츠의 min-content 폭을 강제해 형제 요소를 밀어내는
   게 이 저장소에서 실제로 발생한 회귀 원인이다(위 "회귀 사례" 참고).
 - 고정폭을 유지해야 하는 아이템(아이콘 그룹, 로고, 토글 버튼 등)에는 `flex-shrink: 0`을 명시.
-- 새 브레이크포인트가 필요하면 기존 `@media (max-width: 768px)` 패턴을 재사용하되, 768px
-  구간만으로 충분한지 320px 근처까지 반드시 재확인할 것 — 미디어쿼리가 하나 있다고 반응형이
-  보장되지 않는다.
+- 브레이크포인트는 **768px + 480px** 두 단계이고, 이 값은 `@posselect/ui`의 `tokens.css`
+  ("Responsive layer" 섹션)와 **공유하는 계약**이다. 두 저장소가 같은 페이지를 위아래로
+  감싸므로 경계가 어긋나면 안 된다 — 한쪽을 바꾸면 반드시 다른 쪽도 같이 바꿀 것. 미디어쿼리는
+  `var()`를 읽지 못해 CSS 변수로 뺄 수 없어서 값이 리터럴로 중복돼 있다.
+- 새 구간이 정말 필요한 게 아니면 기존 두 패턴을 재사용하되, **768px 하나만으로 충분한지
+  320px 근처까지 반드시 재확인할 것** — 미디어쿼리가 하나 있다고 반응형이 보장되지 않는다.
+  실제로 2026-08-13에 이 함정에 다시 걸렸다: `.site-header-main`은 좌우 패딩(27.2) + 카테고리
+  토글(40) + 로고(~95) + 액션 4개(172) + gap(30.6) = 364.8px이라 검색창이 자기 최소폭
+  (검색 버튼 48px는 `flex-shrink: 0`이라 더 못 줄어듦)을 확보하려면 뷰포트가 **약 416px**은
+  돼야 했는데, 768px 규칙만 있고 그 아래 구간이 없어서 375px에서 검색창이 버튼만 남게
+  찌그러지며 액션 아이콘을 밀어냈고 문서 폭이 3px 초과돼 **전 페이지가 가로 스크롤**됐다.
+  480px 이하에서 검색창을 둘째 줄 전체 폭(`order: 3` + `flex-basis: 100%`)으로 내려 해결.
+- **`tokens.css`에 없는 CSS 변수를 쓰지 말 것.** fallback 없는 `var()`는 computed-value
+  시점에 무효라 그 선언이 통째로 버려진다(조용히 죽는다). 실제로 `--space-5`가 tokens.css에
+  정의되지 않은 채 이 파일의 카테고리 드로어 4곳에서 쓰이고 있었고, 그 결과 모바일 카테고리
+  패널이 여백 0으로 렌더링되고 있었다(2026-08-13 발견, tokens.css에 `--space-5` 추가로 해결).
+  새 `--space-*`/`--color-*`를 쓰기 전에 tokens.css에 실제로 있는지 확인할 것.
 
 ## 로컬 빌드
 
@@ -163,7 +177,17 @@ npm run build   # dist/v1/header.js, dist/v1/footer.js
 ```
 
 빌드 후 배포 전 반드시 320/375/768px 폭에서 Header/Footer의 모든 요소(아이콘, 메뉴, 검색창,
-링크 그룹)가 잘리거나 뷰포트 밖으로 밀려나지 않는지 눈으로 확인할 것 — 위 "반응형(Responsive)
+링크 그룹)가 잘리거나 뷰포트 밖으로 밀려나지 않는지 눈으로 확인할 것. "눈으로 봐서 괜찮다"만으로는
+부족하고 **`document.documentElement.scrollWidth`가 `clientWidth`를 넘지 않는지 숫자로 확인**하는
+게 확실하다(3px 초과처럼 눈에 잘 안 띄는 값도 가로 스크롤바를 만든다). 서버에 브라우저가 없으면
+헤드리스 크롬 컨테이너로 캡처할 수 있다:
+
+```bash
+docker run --rm --userns=keep-id -v "$PWD":/out:z --entrypoint chromium-browser zenika/alpine-chrome \
+  --headless --disable-gpu --no-sandbox --hide-scrollbars \
+  --window-size=375,812 --virtual-time-budget=12000 \
+  --screenshot=/out/shot.png https://home.posselect.com/
+``` — 위 "반응형(Responsive)
 구현은 필수" 섹션 참고. 이 저장소는 단일 진입점이라 여기서 놓친 반응형 버그는 전 프론트로
 동시에 퍼진다.
 
