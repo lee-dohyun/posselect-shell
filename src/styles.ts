@@ -125,6 +125,12 @@ a { text-decoration: none; }
   padding: var(--space-3) var(--space-5); color: var(--color-text); font-size: 14px;
 }
 .site-header-category-panel-list a:hover { background: var(--color-neutral-100); color: var(--color-accent); }
+.site-header-category-panel-children { list-style: none; margin: 0; padding: 0 0 var(--space-2); }
+.site-header-category-panel-children a {
+  padding: var(--space-2) var(--space-5) var(--space-2) calc(var(--space-5) + var(--space-4));
+  color: var(--color-neutral-600); font-size: 13px;
+}
+.site-header-category-panel-children a:hover { background: var(--color-neutral-100); color: var(--color-accent); }
 
 @media (max-width: 768px) {
   .site-header-utility { gap: var(--space-4); padding: var(--space-2) var(--space-4); font-size: 11px; }

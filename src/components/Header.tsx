@@ -5,6 +5,7 @@ interface HeaderCategory {
   name: string;
   href: string;
   highlight?: boolean;
+  children: HeaderCategory[];
 }
 
 interface HeaderProps {
@@ -53,12 +54,17 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
   useEffect(() => {
     fetch(`${categoriesApiBase}/api/categories`)
       .then((res) => (res.ok ? res.json() : []))
-      .then((data: { id: number; name: string }[]) => {
+      .then((data: { id: number; name: string; parentId: number | null }[]) => {
+        const toHref = (id: number) => `${categoriesApiBase}/?category=${id}`;
+        const topLevel = data.filter((c) => c.parentId == null);
         setCategories(
-          data.map((c) => ({
+          topLevel.map((c) => ({
             id: c.id,
             name: c.name,
-            href: `${categoriesApiBase}/?category=${c.id}`,
+            href: toHref(c.id),
+            children: data
+              .filter((child) => child.parentId === c.id)
+              .map((child) => ({ id: child.id, name: child.name, href: toHref(child.id), children: [] })),
           }))
         );
       })
@@ -216,18 +222,26 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
                 </svg>
               </button>
             </div>
-            {/* product-api의 /api/categories가 아직 평면(1뎁스) 목록만 제공해서, 실제 쿠팡처럼
-                호버 시 우측에 하위 카테고리를 보여주는 2단 구성은 데이터가 갖춰진 뒤로 미룬다.
-                지금은 1뎁스 목록만 노출하되 각 항목에 화살표(›)를 붙여 "하위 카테고리가 곧
-                추가될 구조"라는 의도만 시각적으로 남겨둔다. */}
+            {/* 2뎁스: 하위 카테고리가 있으면 상위 항목 바로 아래 들여쓴 목록으로 항상 펼쳐서
+                보여준다(쿠팡처럼 호버 플라이아웃은 아니지만, 모바일에서도 동일하게 동작하는
+                단순한 구조를 우선). */}
             <ul className="site-header-category-panel-list">
               {categories.length === 0 && <li className="empty">카테고리를 불러오는 중입니다</li>}
               {categories.map((c) => (
                 <li key={c.id}>
                   <a href={c.href}>
                     <span>{c.name}</span>
-                    <span aria-hidden="true">›</span>
+                    {c.children.length === 0 && <span aria-hidden="true">›</span>}
                   </a>
+                  {c.children.length > 0 && (
+                    <ul className="site-header-category-panel-children">
+                      {c.children.map((child) => (
+                        <li key={child.id}>
+                          <a href={child.href}>{child.name}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))}
             </ul>
