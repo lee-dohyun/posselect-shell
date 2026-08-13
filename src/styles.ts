@@ -141,6 +141,26 @@ a { text-decoration: none; }
   .site-header-category-toggle { width: 40px; padding: 0; justify-content: center; }
 }
 
+/* 480px은 @posselect/ui tokens.css의 "Responsive layer"와 공유하는 두 번째 브레이크포인트다
+   (768px과 마찬가지로 두 저장소가 같이 움직여야 함).
+
+   이 아래에서 .site-header-main은 한 줄에 들어갈 수가 없다: 좌우 패딩(27.2) + 카테고리
+   토글(40) + 로고(~95) + 액션 4개(4×40 + gap 3×4 = 172) + gap 3개(30.6) = 364.8px이라,
+   검색창이 자기 최소폭(검색 버튼 48px는 flex-shrink:0라 더 못 줄어듦)을 확보하려면
+   뷰포트가 약 416px은 돼야 한다. 그 아래에서는 검색창이 버튼만 남게 찌그러지면서 액션
+   아이콘을 밀어내 페이지 전체가 가로 스크롤됐다(375px에서 3px 초과 확인, 2026-08-13).
+
+   해결: 이 구간에서만 검색창을 둘째 줄 전체 폭으로 내린다(국내 커머스 모바일 헤더 관례).
+   order:3으로 마지막에 배치 + flex-basis:100%로 강제 줄바꿈. 첫 줄은 토글+로고+액션만
+   남아 375px 기준 354.6px으로 들어간다. 320px처럼 그보다도 좁으면 flex-wrap 덕분에
+   액션이 한 줄 더 내려갈 뿐 가로 스크롤은 생기지 않는다. */
+@media (max-width: 480px) {
+  .site-header-main { flex-wrap: wrap; row-gap: var(--space-3); }
+  .site-header-search { order: 3; flex-basis: 100%; max-width: none; }
+  /* 로고를 조금 줄여 첫 줄에 여유를 준다(액션 아이콘은 이미 40px이라 터치 타깃상 더 줄이지 않음). */
+  .site-header-logo { height: 22px; }
+}
+
 .site-footer { border-top: 1px solid var(--color-divider); background: var(--color-bg); font-size: 13px; }
 .site-footer-top {
   display: flex; justify-content: space-between; align-items: flex-start; gap: var(--space-8);
