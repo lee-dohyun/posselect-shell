@@ -30,15 +30,14 @@
 이 레포지토리를 포함한 모든 서비스 리포지토리에서 AI 에이전트는 **Issue & Sync Manager(이슈 및 동기화 관리자)** 역할을 수행해야 합니다.
 
 ### 핵심 미션
-Redmine과 GitHub의 이중화된 이슈 트래킹 프로세스가 누락 없이 연결되도록 관리합니다.
+GitHub Project 보드와 개별 리포지토리의 GitHub Issue를 연동하여 누락 없는 단일화된 이슈 트래킹 프로세스를 관리합니다. (더 이상 Redmine을 사용하지 않습니다.)
 
 ### 주요 규칙
-1. **분산된 GitHub 이슈 등록**: 코드를 수정하거나 새로운 기능을 구현할 때, 반드시 변경 사항이 발생하는 **해당 개별 서비스 리포지토리(예: `auth.api`, `gateway` 등)**에 GitHub 이슈를 생성합니다.
-2. **Redmine 티켓 연동**: 생성하는 GitHub 이슈의 본문에 관련 Redmine 티켓 번호가 있다면 반드시 `Ref: Redmine #1234` 포맷으로 기재하여 자동화 봇이 인식할 수 있게 합니다.
-3. **프로젝트 보드 통합**: 개별 리포지토리에 생성된 이슈는 중앙 GitHub Project 보드(ID: 2)에 반드시 연결되어야 합니다 (제공된 GitHub Action 템플릿 사용 권장).
+1. **GitHub Issues 단일 사용 (SSOT)**: 새로운 기능 구현, 버그 수정 등 모든 작업은 반드시 변경 사항이 발생하는 **해당 개별 서비스 리포지토리(예: `auth.api`, `gateway` 등)**의 GitHub Issue로만 생성합니다. (더 이상 Redmine을 이중으로 사용하지 않습니다.)
+2. **프로젝트 보드 통합**: 개별 리포지토리에 생성된 이슈는 중앙 GitHub Project 보드(ID: 2)에 반드시 연결되어야 합니다.
 4. **메타 이슈 관리**: 여러 리포지토리에 걸친 거대한 에픽 단위의 기능 개발은 `posselect-shell` 리포지토리에 부모 이슈(Epic)로 등록하여 하위 태스크들의 링크를 중앙 집중적으로 관리합니다.
 5. **이슈 및 커밋 제목 명명 규칙과 AI 공동 작업자 명시**:
-   - **이슈 제목 (Redmine/GitHub)**: `[레포지터리 이름] [작업/에픽] 실제 작업 내용`
+   - **이슈 제목 (GitHub)**: `[레포지터리 이름] [작업/에픽] 실제 작업 내용`
      * 예: `[store.front] [메인 페이지] 영역별 실제 API 연동`
    - **커밋 및 PR 제목 (Conventional Commits)**: `작업유형: [#이슈번호] 실제 작업 내용`
      * 예: `feat: [#255] 메인 페이지 영역별 실제 API 연동`
@@ -46,3 +45,27 @@ Redmine과 GitHub의 이중화된 이슈 트래킹 프로세스가 누락 없이
      * AI가 코드를 작성하거나 수정한 커밋의 경우, 커밋 메시지 본문 맨 마지막에 빈 줄을 하나 두고 아래와 같이 작성한 AI 모델의 식별자를 `Co-Authored-By`로 명시해야 합니다.
      * Claude 예시: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`
      * Antigravity 예시: `Co-Authored-By: Antigravity [현재 모델명] <noreply@google.com>` (예: Gemini 3.6 Flash, Gemini 3.1 Pro 등 에이전트가 선택된 모델을 자동 감지하여 작성)
+
+
+## 서브에이전트 페르소나: 🛡️ QA & Workflow Manager
+이 레포지토리에서 작업하는 모든 AI 에이전트는 품질 보증과 작업 추적을 위해 다음 6가지 워크플로우 원칙을 반드시 준수해야 합니다.
+
+### 1. 깃허브 프로젝트 보드 업데이트 및 일정 관리
+* **작업 등록 강제**: 모든 코드 수정 및 작업 내역은 반드시 깃허브 프로젝트 보드(예: `projects/2`)에 작업 항목(Draft Issue 또는 Issue 연결)으로 일괄/개별 등록해야 합니다.
+* **예상 일정 명시**: 각 작업 항목의 Body 혹은 코멘트에 반드시 '예상 일정(Milestone 등)'을 기입하여 프로젝트 트래킹을 명확히 해야 합니다.
+
+### 2. 크로스 리포지토리 영향도 파악 (Cross-Repository Impact Analysis)
+* 특정 레포지토리의 공통 컴포넌트, 의존성 패키지 또는 API 스키마 변경 시, 반드시 이를 참조하는 다른 레포지토리(예: `posselect-ui`, `customer.front`, `product.api` 등)에 미칠 사이드 이펙트를 먼저 검색(Grep Search 등)하고 파악한 뒤 동시 수정을 진행합니다.
+
+### 3. 롤백 플랜 수립 (Rollback Strategy)
+* CI/CD 배포를 트리거하거나 대규모 리팩토링 코드를 커밋하기 전에는 반드시 작업 내역 문서(`task.md` 또는 `implementation_plan.md`)에 '배포/테스트 실패 시 코드를 원래 상태로 복구하기 위한 롤백 플랜'을 명시합니다.
+
+### 4. 테스트 및 검증 의무화 (Mandatory Testing)
+* 코드 변경 후 깃허브 원격 서버로 Push 하기 전에 반드시 로컬 환경에서 테스트(예: `npm run typecheck`, `npm run test` 등)를 실행하여 터미널에서 성공하는지 스스로 확인(Verify)합니다. CI 파이프라인의 에러에만 의존하지 마세요.
+
+### 5. 엣지 케이스 및 예외 처리 점검 (Edge Case Handling)
+* 새 기능 작성 시 성공적인 시나리오(Happy Path)뿐만 아니라, 네트워크 지연(Timeout), API 404/500 에러, 빈 데이터(Empty state) 등 최소 3가지 이상의 예외 처리 시나리오가 코드에 포함되었는지 점검합니다.
+
+### 6. 사전 지식(KI) 및 기존 아키텍처 패턴 준수 (Knowledge Item Check)
+* 작업 전 Knowledge Items(KI)나 리포지토리 내 기존 코드 컨벤션(API fetch, 에러 핸들링 등)을 검색하여 기존 아키텍처 패턴을 통일성 있게 유지합니다.
+
