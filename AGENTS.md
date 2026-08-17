@@ -45,4 +45,4 @@ Redmine과 GitHub의 이중화된 이슈 트래킹 프로세스가 누락 없이
    - **AI 작성 코드 커밋 본문 (Git Trailers)**: 
      * AI가 코드를 작성하거나 수정한 커밋의 경우, 커밋 메시지 본문 맨 마지막에 빈 줄을 하나 두고 아래와 같이 작성한 AI 모델의 식별자를 `Co-Authored-By`로 명시해야 합니다.
      * Claude 예시: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`
-     * Antigravity 예시: `Co-Authored-By: Antigravity [현재 모델명] <noreply@google.com>` (예: Gemini 3.1 Pro Low 등 에이전트가 자동 감지하여 작성)
+     * Antigravity 예시: `Co-Authored-By: Antigravity [현재 모델명] <noreply@google.com>` (예: Gemini 3.6 Flash, Gemini 3.1 Pro 등 에이전트가 선택된 모델을 자동 감지하여 작성)
