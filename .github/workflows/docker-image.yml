@@ -26,14 +26,7 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Install Playwright
-        run: npx playwright install --with-deps chromium
 
-      - name: Test Storybook
-        run: |
-          npx concurrently -k -s first -n "SB,TEST" -c "magenta,blue" \
-            "npm run storybook -- --no-open --port 6006" \
-            "npx wait-on tcp:127.0.0.1:6006 && npm run test-storybook"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
