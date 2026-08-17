@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
 import { SHELL_CSS } from '../styles';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 const meta = {
   title: 'Components/Shell',
