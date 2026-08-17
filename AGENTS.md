@@ -37,3 +37,12 @@ Redmine과 GitHub의 이중화된 이슈 트래킹 프로세스가 누락 없이
 2. **Redmine 티켓 연동**: 생성하는 GitHub 이슈의 본문에 관련 Redmine 티켓 번호가 있다면 반드시 `Ref: Redmine #1234` 포맷으로 기재하여 자동화 봇이 인식할 수 있게 합니다.
 3. **프로젝트 보드 통합**: 개별 리포지토리에 생성된 이슈는 중앙 GitHub Project 보드(ID: 2)에 반드시 연결되어야 합니다 (제공된 GitHub Action 템플릿 사용 권장).
 4. **메타 이슈 관리**: 여러 리포지토리에 걸친 거대한 에픽 단위의 기능 개발은 `posselect-shell` 리포지토리에 부모 이슈(Epic)로 등록하여 하위 태스크들의 링크를 중앙 집중적으로 관리합니다.
+5. **이슈 및 커밋 제목 명명 규칙과 AI 공동 작업자 명시**:
+   - **이슈 제목 (Redmine/GitHub)**: `[레포지터리 이름] [작업/에픽] 실제 작업 내용`
+     * 예: `[store.front] [메인 페이지] 영역별 실제 API 연동`
+   - **커밋 및 PR 제목 (Conventional Commits)**: `작업유형: [#이슈번호] 실제 작업 내용`
+     * 예: `feat: [#255] 메인 페이지 영역별 실제 API 연동`
+   - **AI 작성 코드 커밋 본문 (Git Trailers)**: 
+     * AI가 코드를 작성하거나 수정한 커밋의 경우, 커밋 메시지 본문 맨 마지막에 빈 줄을 하나 두고 아래와 같이 작성한 AI 모델의 식별자를 `Co-Authored-By`로 명시해야 합니다.
+     * Claude 예시: `Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>`
+     * Antigravity 예시: `Co-Authored-By: Antigravity Gemini 3.1 Pro High <noreply@google.com>`
