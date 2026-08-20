@@ -1,6 +1,25 @@
 import { createRoot } from 'react-dom/client';
 import { Header } from './components/Header';
 import { SHELL_CSS } from './styles';
+import { addRecentlyViewed, getRecentlyViewed, clearRecentlyViewed } from './lib/recentlyViewed';
+
+// 호스트 앱(product.front 등)은 posselect-shell을 빌드 타임 의존성으로 설치하지 않고
+// <script> 태그로만 로드하므로(header.tsx 상단 아키텍처 주석 참고), 상품 조회 기록 함수도
+// import가 아니라 이 전역 객체를 통해 노출한다 — customElements.define과 동일한 패턴.
+declare global {
+  interface Window {
+    posselect?: {
+      recentlyViewed?: {
+        add: typeof addRecentlyViewed;
+        get: typeof getRecentlyViewed;
+        clear: typeof clearRecentlyViewed;
+      };
+    };
+  }
+}
+
+window.posselect = window.posselect ?? {};
+window.posselect.recentlyViewed = { add: addRecentlyViewed, get: getRecentlyViewed, clear: clearRecentlyViewed };
 
 const DEFAULT_SEARCH_HREF = 'https://product.posselect.com';
 const DEFAULT_AUTH_API_BASE = 'https://customer.posselect.com';

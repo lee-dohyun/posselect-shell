@@ -1,4 +1,11 @@
 import React, { FormEvent, useEffect, useState } from 'react';
+import {
+  getRecentlyViewed,
+  clearRecentlyViewed,
+  RECENTLY_VIEWED_STORAGE_KEY,
+  RECENTLY_VIEWED_CHANGE_EVENT,
+  type RecentlyViewedItem,
+} from '../lib/recentlyViewed';
 
 interface HeaderCategory {
   id: number;
@@ -50,6 +57,24 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
   // 이 패널 하나로 처리한다 — 하위 카테고리(2뎁스) 데이터가 아직 없어서(product-api의
   // /api/categories가 평면 목록만 반환) 패널 안에서는 1뎁스 목록만 보여준다.
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewedItem[]>(() => getRecentlyViewed());
+  const [recentPanelOpen, setRecentPanelOpen] = useState(false);
+
+  useEffect(() => {
+    // 같은 탭에서 상품 상세 페이지가 방금 기록한 항목(커스텀 이벤트)과, 다른 탭에서의 변경
+    // (표준 storage 이벤트, 이 탭 자신에게는 발화하지 않음)을 모두 반영해 패널을 최신 상태로
+    // 유지한다.
+    const sync = () => setRecentlyViewed(getRecentlyViewed());
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === null || e.key === RECENTLY_VIEWED_STORAGE_KEY) sync();
+    };
+    window.addEventListener(RECENTLY_VIEWED_CHANGE_EVENT, sync);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener(RECENTLY_VIEWED_CHANGE_EVENT, sync);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
 
   useEffect(() => {
     fetch(`${categoriesApiBase}/api/categories`)
@@ -118,10 +143,55 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
         )}
         <a href="https://customer.posselect.com/mypage">주문조회</a>
         <a href="https://customer.posselect.com/mypage">고객센터</a>
-        {/* 알림/최근 본 상품: 백엔드가 없어 클릭해도 아무 동작이 없는 비활성 표시만 유지한다
-            (진짜 링크로 두면 404로 튕겨나가므로 span + aria-disabled로 "미구현" 상태를 명시). */}
-        <span className="disabled" aria-disabled="true" title="준비 중인 기능입니다">
-          최근 본 상품
+        <span className="site-header-recent">
+          <button
+            type="button"
+            className="link"
+            aria-expanded={recentPanelOpen}
+            onClick={() => setRecentPanelOpen((v) => !v)}
+          >
+            최근 본 상품{recentlyViewed.length > 0 ? ` (${recentlyViewed.length})` : ''}
+          </button>
+          {recentPanelOpen && (
+            <>
+              <div className="site-header-recent-overlay" onClick={() => setRecentPanelOpen(false)} />
+              <div className="site-header-recent-panel" role="dialog" aria-label="최근 본 상품">
+                <div className="site-header-recent-panel-head">
+                  <span>최근 본 상품</span>
+                  {recentlyViewed.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearRecentlyViewed();
+                        setRecentlyViewed([]);
+                      }}
+                    >
+                      전체 삭제
+                    </button>
+                  )}
+                </div>
+                {recentlyViewed.length === 0 ? (
+                  <p className="site-header-recent-empty">최근 본 상품이 없습니다</p>
+                ) : (
+                  <ul className="site-header-recent-list">
+                    {recentlyViewed.map((item) => (
+                      <li key={item.id}>
+                        <a href={item.href}>
+                          {item.imageUrl ? (
+                            <img src={item.imageUrl} alt="" />
+                          ) : (
+                            <span className="site-header-recent-thumb-empty" aria-hidden="true" />
+                          )}
+                          <span className="site-header-recent-name">{item.name}</span>
+                          <span className="site-header-recent-price">{item.price.toLocaleString()}원</span>
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </>
+          )}
         </span>
       </div>
 
