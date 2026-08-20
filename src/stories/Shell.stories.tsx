@@ -15,8 +15,21 @@ const meta = {
         const style = document.createElement('style');
         style.innerHTML = SHELL_CSS;
         document.head.appendChild(style);
+        
+        // Mock fetch to prevent timeout in test-runner
+        const originalFetch = window.fetch;
+        window.fetch = async (input, init) => {
+          if (typeof input === 'string') {
+            if (input.includes('/api/categories')) return { ok: true, json: async () => [] } as any;
+            if (input.includes('/api/auth/me')) return { ok: true, json: async () => null } as any;
+            if (input.includes('/api/cart')) return { ok: true, json: async () => ({ items: [] }) } as any;
+          }
+          return originalFetch(input, init);
+        };
+
         return () => {
           document.head.removeChild(style);
+          window.fetch = originalFetch;
         };
       }, []);
       return <Story />;
