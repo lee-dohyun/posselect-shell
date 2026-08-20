@@ -28,6 +28,40 @@ a { text-decoration: none; }
 .site-header-utility button.link:hover { color: var(--color-accent); }
 .site-header-utility span.disabled { color: var(--color-neutral-400); cursor: default; }
 
+.site-header-recent { position: relative; }
+.site-header-recent-overlay { position: fixed; inset: 0; z-index: 999; background: transparent; }
+.site-header-recent-panel {
+  position: absolute; top: calc(100% + var(--space-2)); right: 0; width: 300px;
+  max-height: 420px; overflow-y: auto; z-index: 1000;
+  background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+.site-header-recent-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-3) var(--space-4); border-bottom: 1px solid var(--color-divider);
+  font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 13.5px;
+}
+.site-header-recent-panel-head button {
+  border: none; background: none; cursor: pointer; color: var(--color-neutral-700); font: inherit; font-size: 12px;
+}
+.site-header-recent-panel-head button:hover { color: var(--color-accent); }
+.site-header-recent-empty { padding: var(--space-6) var(--space-4); text-align: center; color: var(--color-neutral-400); font-size: 13px; }
+.site-header-recent-list { list-style: none; margin: 0; padding: var(--space-2) 0; }
+.site-header-recent-list a {
+  display: flex; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-4); color: var(--color-text);
+}
+.site-header-recent-list a:hover { background: var(--color-neutral-100); }
+.site-header-recent-list img,
+.site-header-recent-thumb-empty {
+  width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--radius-sm); object-fit: cover;
+  background: var(--color-neutral-100);
+}
+.site-header-recent-name {
+  flex: 1; min-width: 0; font-size: 13px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.site-header-recent-price { flex-shrink: 0; font-size: 12.5px; font-weight: 600; color: var(--color-neutral-700); }
+
 .site-header-main {
   display: flex; align-items: center; gap: var(--space-6);
   padding: var(--space-4) var(--space-6);
