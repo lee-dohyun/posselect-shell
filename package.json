@@ -12,7 +12,7 @@
     "test-storybook": "test-storybook"
   },
   "dependencies": {
-    "@posselect/ui": "github:lee-dohyun/posselect-ui",
+    "@posselect/ui": "github:lee-dohyun/posselect-ui#eae0b64a3e350c1f0b7215518fa302f851ad4144",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
