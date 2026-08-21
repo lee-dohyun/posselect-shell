@@ -29,7 +29,26 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      # jsdom 기반 plain unit-test 프로젝트(vitest.config.ts의 "unit" project)만 돈다.
+      # Storybook 브라우저 프로젝트("storybook")는 과거 flaky로 test-storybook에서 빠졌던
+      # 이력이 있어 이 게이트에는 포함하지 않는다(scripts/test는 --project unit으로 한정).
+      - name: Test
+        run: npm test
 
+      # Report-only: 실패 임계값을 걸지 않는다(vitest coverage thresholds 미설정).
+      # 테스트 자체가 실패하면 위 "Test" 스텝에서 이미 잡히므로, 이 스텝은 커버리지
+      # 리포트를 만들어 아티팩트로 남기는 역할만 한다.
+      - name: Test coverage (report-only)
+        run: npm run test:coverage
+        continue-on-error: true
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report-${{ github.sha }}
+          path: coverage/
+          retention-days: 14
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
