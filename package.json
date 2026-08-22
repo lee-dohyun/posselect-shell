@@ -35,7 +35,7 @@
     "jsdom": "^26.1.0",
     "playwright": "latest",
     "storybook": "^10.5.8",
-    "typescript": "^5.6.0",
+    "typescript": "^7.0.2",
     "vite": "^5.4.0",
     "vitest": "latest",
     "wait-on": "^9.1.0"
