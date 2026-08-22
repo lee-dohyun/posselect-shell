@@ -36,7 +36,7 @@
     "playwright": "latest",
     "storybook": "^10.5.8",
     "typescript": "^5.6.0",
-    "vite": "^5.4.0",
+    "vite": "^8.2.1",
     "vitest": "latest",
     "wait-on": "^9.1.0"
   }
