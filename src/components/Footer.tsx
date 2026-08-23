@@ -91,12 +91,12 @@ export function Footer() {
       </div>
 
       <div className="site-footer-app">
-        <span className="badge" aria-disabled="true" title="준비 중">
+        <a href="https://apps.apple.com/app/posselect" className="badge" target="_blank" rel="noopener noreferrer">
           App Store
-        </span>
-        <span className="badge" aria-disabled="true" title="준비 중">
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=com.posselect" className="badge" target="_blank" rel="noopener noreferrer">
           Google Play
-        </span>
+        </a>
       </div>
     </footer>
   );
