@@ -9,10 +9,12 @@
     "typecheck": "tsc --noEmit",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test-storybook": "test-storybook"
+    "test-storybook": "test-storybook",
+    "test": "vitest run --project unit",
+    "test:coverage": "vitest run --project unit --coverage"
   },
   "dependencies": {
-    "@posselect/ui": "github:lee-dohyun/posselect-ui",
+    "@posselect/ui": "github:lee-dohyun/posselect-ui#eae0b64a3e350c1f0b7215518fa302f851ad4144",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
@@ -30,6 +32,7 @@
     "@vitest/browser-playwright": "latest",
     "@vitest/coverage-v8": "latest",
     "concurrently": "^10.0.5",
+    "jsdom": "^26.1.0",
     "playwright": "latest",
     "storybook": "^10.5.8",
     "typescript": "^5.6.0",

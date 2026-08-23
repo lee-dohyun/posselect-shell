@@ -59,27 +59,27 @@ export function Footer() {
 
       <div className="site-footer-bottom">
         <div className="site-footer-copyright">© {year} PosSelect Corp. All rights reserved.</div>
-        {/* SNS/앱 다운로드: 실제 채널/앱이 없어 클릭해도 아무 데도 안 가는 비활성 표시만 유지한다
+        {/* 앱 다운로드: 실제 앱이 없어 클릭해도 아무 데도 안 가는 비활성 표시만 유지한다
             (진짜 링크로 두면 404로 튕겨나가므로 span + aria-disabled로 "미구현" 상태를 명시). */}
         <div className="site-footer-social">
-          <span className="icon-btn" aria-disabled="true" title="준비 중">
+          <a href="https://instagram.com/posselect" className="icon-btn" target="_blank" rel="noopener noreferrer" title="Instagram">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
               <rect x="2" y="2" width="20" height="20" rx="5"></rect>
               <circle cx="12" cy="12" r="4.2"></circle>
               <circle cx="17.4" cy="6.6" r="1"></circle>
             </svg>
-          </span>
-          <span className="icon-btn" aria-disabled="true" title="준비 중">
+          </a>
+          <a href="https://facebook.com/posselect" className="icon-btn" target="_blank" rel="noopener noreferrer" title="Facebook">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
               <path d="M14 9V6a2 2 0 0 1 2-2h2V1h-3a5 5 0 0 0-5 5v3H7v3h3v10h4V12h3l1-3h-4z"></path>
             </svg>
-          </span>
-          <span className="icon-btn" aria-disabled="true" title="준비 중">
+          </a>
+          <a href="https://youtube.com/@posselect" className="icon-btn" target="_blank" rel="noopener noreferrer" title="YouTube">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
               <rect x="2" y="4" width="20" height="16" rx="3"></rect>
               <polygon points="10 9 15 12 10 15" fill="currentColor" stroke="none"></polygon>
             </svg>
-          </span>
+          </a>
         </div>
         <div className="site-footer-payments">
           <span className="tag">VISA</span>
@@ -91,12 +91,12 @@ export function Footer() {
       </div>
 
       <div className="site-footer-app">
-        <span className="badge" aria-disabled="true" title="준비 중">
+        <a href="https://apps.apple.com/app/posselect" className="badge" target="_blank" rel="noopener noreferrer">
           App Store
-        </span>
-        <span className="badge" aria-disabled="true" title="준비 중">
+        </a>
+        <a href="https://play.google.com/store/apps/details?id=com.posselect" className="badge" target="_blank" rel="noopener noreferrer">
           Google Play
-        </span>
+        </a>
       </div>
     </footer>
   );

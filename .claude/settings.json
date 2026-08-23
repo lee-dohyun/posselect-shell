@@ -5,6 +5,7 @@
       "Bash(npm run typecheck*)",
       "Bash(npm run build*)",
       "Bash(npm test*)",
+      "Bash(npx vitest*)",
       "Bash(npm ci*)",
       "Bash(npm install*)",
       "Bash(git status*)",
