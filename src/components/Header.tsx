@@ -228,7 +228,7 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
         </div>
 
         <div className="site-header-actions">
-          <a className="site-header-action" href="https://customer.posselect.com/mypage" aria-label="찜">
+          <a className="site-header-action" href="https://customer.posselect.com/mypage#wishlist" aria-label="찜">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"></path>
             </svg>
