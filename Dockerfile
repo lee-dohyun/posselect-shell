@@ -12,6 +12,8 @@ RUN npm run build
 RUN npm run build-storybook
 
 FROM nginx:alpine
+# 베이스 이미지 태그가 갱신되기 전에 나온 OS 패키지 수정본을 받는다(gateway#247 - pcre2·libexpat 등).
+RUN apk upgrade --no-cache
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY --from=build /app/storybook-static /usr/share/nginx/html/storybook
 COPY nginx.conf /etc/nginx/conf.d/default.conf
