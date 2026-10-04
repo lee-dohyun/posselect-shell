@@ -1,4 +1,4 @@
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { FormEvent, MouseEvent, useEffect, useState } from 'react';
 import {
   getRecentlyViewed,
   clearRecentlyViewed,
@@ -7,6 +7,7 @@ import {
   type RecentlyViewedItem,
 } from '../lib/recentlyViewed';
 import {
+  READ_BEFORE_NAVIGATE_TIMEOUT_MS,
   UNREAD_POLL_INTERVAL_MS,
   badgeLabel,
   fetchInbox,
@@ -15,6 +16,7 @@ import {
   markRead,
   relativeTime,
   safeLink,
+  settleWithin,
   type NotificationItem,
 } from '../lib/notifications';
 
@@ -162,13 +164,20 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
     }
   };
 
-  // 화면을 먼저 바꾸고 서버에 알린다. 링크가 있으면 브라우저가 곧바로 이동하므로 응답을 기다리지 않는다
-  // (요청은 keepalive 로 이동 뒤에도 끝까지 간다).
-  const handleNotificationClick = (item: NotificationItem) => {
+  // 화면을 먼저 바꾸고 서버에 알린다. 링크가 있는 알림은 읽음 요청이 끝난 뒤에 이동한다 — 바로 이동하면
+  // 도착한 화면의 헤더가 읽음 반영 전에 개수를 조회해 배지가 남는다(운영에서 확인). 새 탭으로 여는
+  // 클릭(Ctrl/⌘/Shift/가운데 버튼)은 이 화면이 그대로 남으므로 브라우저에 맡긴다.
+  const handleNotificationClick = (e: MouseEvent<HTMLElement>, item: NotificationItem, href: string | null) => {
     if (item.read) return;
     setNotifications((prev) => prev?.map((n) => (n.id === item.id ? { ...n, read: true } : n)) ?? prev);
     setUnreadCount((count) => Math.max(0, count - 1));
-    void markRead(authApiBase, item.id);
+    const reading = markRead(authApiBase, item.id);
+    const opensInThisTab = e.button === 0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey;
+    if (!href || !opensInThisTab) return;
+    e.preventDefault();
+    void settleWithin(reading, READ_BEFORE_NAVIGATE_TIMEOUT_MS).then(() => {
+      window.location.href = href;
+    });
   };
 
   const handleMarkAllRead = async () => {
@@ -351,11 +360,11 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
                         return (
                           <li key={item.id} className={item.read ? 'read' : undefined}>
                             {href ? (
-                              <a href={href} onClick={() => handleNotificationClick(item)}>
+                              <a href={href} onClick={(e) => handleNotificationClick(e, item, href)}>
                                 {content}
                               </a>
                             ) : (
-                              <button type="button" onClick={() => handleNotificationClick(item)}>
+                              <button type="button" onClick={(e) => handleNotificationClick(e, item, null)}>
                                 {content}
                               </button>
                             )}
