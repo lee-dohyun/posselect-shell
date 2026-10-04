@@ -6,6 +6,17 @@ import {
   RECENTLY_VIEWED_CHANGE_EVENT,
   type RecentlyViewedItem,
 } from '../lib/recentlyViewed';
+import {
+  UNREAD_POLL_INTERVAL_MS,
+  badgeLabel,
+  fetchInbox,
+  fetchUnreadCount,
+  markAllRead,
+  markRead,
+  relativeTime,
+  safeLink,
+  type NotificationItem,
+} from '../lib/notifications';
 
 interface HeaderCategory {
   id: number;
@@ -59,6 +70,11 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
   const [categoryMenuOpen, setCategoryMenuOpen] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState<RecentlyViewedItem[]>(() => getRecentlyViewed());
   const [recentPanelOpen, setRecentPanelOpen] = useState(false);
+  // 알림(posselect-shell#79). 배지 숫자는 주기적으로, 목록은 패널을 열 때만 받아 온다.
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<NotificationItem[] | null>(null);
+  const [notifyPanelOpen, setNotifyPanelOpen] = useState(false);
+  const loggedIn = checked && Boolean(user);
 
   useEffect(() => {
     // 같은 탭에서 상품 상세 페이지가 방금 기록한 항목(커스텀 이벤트)과, 다른 탭에서의 변경
@@ -109,6 +125,58 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
       })
       .catch(() => setCartCount(0));
   }, [categoriesApiBase, authApiBase, cartApiBase]);
+
+  // 안 읽은 알림 개수. 로그인 확인이 끝난 뒤에만 부른다 — customer 호스트는 로그인 강제 호스트라
+  // 비로그인으로 부르면 로그인 페이지로 302 가 나간다. 탭이 가려져 있는 동안은 폴링을 쉰다.
+  useEffect(() => {
+    if (!loggedIn) return;
+    let cancelled = false;
+    const refresh = () => {
+      if (document.visibilityState === 'hidden') return;
+      fetchUnreadCount(authApiBase).then((count) => {
+        if (!cancelled) setUnreadCount(count);
+      });
+    };
+    refresh();
+    const timer = window.setInterval(refresh, UNREAD_POLL_INTERVAL_MS);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [loggedIn, authApiBase]);
+
+  const toggleNotifyPanel = () => {
+    if (!loggedIn) {
+      window.location.href = 'https://customer.posselect.com/login';
+      return;
+    }
+    const opening = !notifyPanelOpen;
+    setNotifyPanelOpen(opening);
+    if (opening) {
+      fetchInbox(authApiBase).then((inbox) => {
+        setNotifications(inbox?.items ?? []);
+        if (inbox) setUnreadCount(inbox.unreadCount);
+      });
+    }
+  };
+
+  // 화면을 먼저 바꾸고 서버에 알린다. 링크가 있으면 브라우저가 곧바로 이동하므로 응답을 기다리지 않는다
+  // (요청은 keepalive 로 이동 뒤에도 끝까지 간다).
+  const handleNotificationClick = (item: NotificationItem) => {
+    if (item.read) return;
+    setNotifications((prev) => prev?.map((n) => (n.id === item.id ? { ...n, read: true } : n)) ?? prev);
+    setUnreadCount((count) => Math.max(0, count - 1));
+    void markRead(authApiBase, item.id);
+  };
+
+  const handleMarkAllRead = async () => {
+    if (await markAllRead(authApiBase)) {
+      setNotifications((prev) => prev?.map((n) => ({ ...n, read: true })) ?? prev);
+      setUnreadCount(0);
+    }
+  };
 
   const handleSearch = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -234,21 +302,72 @@ export function Header({ searchHref, categoriesApiBase, authApiBase, cartApiBase
             </svg>
             <span className="label">찜</span>
           </a>
-          {/* 알림: 아직 알림 발송/조회 API가 없어 배지 없이 비활성 상태로만 노출 (버튼이지만
-              disabled 처리해 클릭해도 아무 반응이 없다). */}
-          <button
-            type="button"
-            className="site-header-action"
-            disabled
-            aria-label="알림"
-            title="준비 중인 기능입니다"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.7 21a2 2 0 0 1-3.4 0"></path>
-            </svg>
-            <span className="label">알림</span>
-          </button>
+          {/* 알림: 비로그인이면 로그인으로 보내고, 로그인 상태면 알림함 패널을 연다(posselect-shell#79). */}
+          <span className="site-header-notify">
+            <button
+              type="button"
+              className="site-header-action"
+              aria-label={unreadCount > 0 ? `알림, 안 읽은 알림 ${unreadCount}개` : '알림'}
+              aria-expanded={notifyPanelOpen}
+              onClick={toggleNotifyPanel}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.7 21a2 2 0 0 1-3.4 0"></path>
+              </svg>
+              <span className="label">알림</span>
+              {unreadCount > 0 && <span className="site-header-action-badge">{badgeLabel(unreadCount)}</span>}
+            </button>
+            {notifyPanelOpen && (
+              <>
+                <div className="site-header-recent-overlay" onClick={() => setNotifyPanelOpen(false)} />
+                <div className="site-header-notify-panel" role="dialog" aria-label="알림">
+                  <div className="site-header-recent-panel-head">
+                    <span>알림</span>
+                    {unreadCount > 0 && (
+                      <button type="button" onClick={handleMarkAllRead}>
+                        모두 읽음
+                      </button>
+                    )}
+                  </div>
+                  {notifications === null ? (
+                    <p className="site-header-recent-empty">불러오는 중…</p>
+                  ) : notifications.length === 0 ? (
+                    <p className="site-header-recent-empty">새 알림이 없습니다</p>
+                  ) : (
+                    <ul className="site-header-notify-list">
+                      {notifications.map((item) => {
+                        const href = safeLink(item.linkUrl);
+                        const content = (
+                          <>
+                            <span className="site-header-notify-title">
+                              {!item.read && <span className="site-header-notify-dot" aria-label="안 읽음" />}
+                              {item.title}
+                            </span>
+                            {item.body && <span className="site-header-notify-body">{item.body}</span>}
+                            <span className="site-header-notify-time">{relativeTime(item.createdAt)}</span>
+                          </>
+                        );
+                        return (
+                          <li key={item.id} className={item.read ? 'read' : undefined}>
+                            {href ? (
+                              <a href={href} onClick={() => handleNotificationClick(item)}>
+                                {content}
+                              </a>
+                            ) : (
+                              <button type="button" onClick={() => handleNotificationClick(item)}>
+                                {content}
+                              </button>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              </>
+            )}
+          </span>
           <a className="site-header-action" href="https://customer.posselect.com/mypage" aria-label="마이페이지">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="8" r="4"></circle>

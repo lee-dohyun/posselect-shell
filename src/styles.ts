@@ -115,6 +115,37 @@ a { text-decoration: none; }
   min-width: 16px; height: 16px; line-height: 16px; text-align: center; border-radius: 8px;
 }
 
+/* 알림 패널(posselect-shell#79). 최근 본 상품 패널과 같은 모양이지만 액션 버튼 아래에 붙는다.
+   버튼 기준 오른쪽 정렬이라 좁은 화면에서는 왼쪽이 뷰포트 밖으로 나간다 — 768px 이하에서는
+   .site-header-main 기준으로 좌우를 채운다(아래 미디어 쿼리). */
+.site-header-notify { position: relative; display: flex; }
+.site-header-notify-panel {
+  position: absolute; top: calc(100% + var(--space-2)); right: 0; width: 320px;
+  max-height: 420px; overflow-y: auto; z-index: 1000;
+  background: var(--color-bg); border: 1px solid var(--color-divider); border-radius: var(--radius-sm);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+.site-header-notify-list { list-style: none; margin: 0; padding: 0; }
+.site-header-notify-list li + li { border-top: 1px solid var(--color-divider); }
+.site-header-notify-list a,
+.site-header-notify-list button {
+  display: flex; flex-direction: column; gap: 2px; width: 100%; min-width: 0;
+  padding: var(--space-3) var(--space-4); border: none; background: none; cursor: pointer;
+  font: inherit; text-align: left; color: var(--color-text);
+}
+.site-header-notify-list a:hover,
+.site-header-notify-list button:hover { background: var(--color-neutral-100); }
+.site-header-notify-list li.read a,
+.site-header-notify-list li.read button { color: var(--color-neutral-700); cursor: default; }
+.site-header-notify-list li.read a { cursor: pointer; }
+.site-header-notify-title { display: flex; align-items: center; gap: var(--space-2); font-size: 13.5px; font-weight: 600; }
+.site-header-notify-list li.read .site-header-notify-title { font-weight: 400; }
+.site-header-notify-dot {
+  width: 6px; height: 6px; flex-shrink: 0; border-radius: 50%; background: var(--color-accent);
+}
+.site-header-notify-body { font-size: 12.5px; color: var(--color-neutral-700); overflow-wrap: anywhere; }
+.site-header-notify-time { font-size: 11px; color: var(--color-neutral-400); }
+
 .site-header-categories {
   display: flex; align-items: center; gap: var(--space-6);
   padding: 0 var(--space-6); font-size: 13.5px;
@@ -171,6 +202,10 @@ a { text-decoration: none; }
   .site-header-main { padding: var(--space-3) var(--space-4); gap: var(--space-3); }
   .site-header-action span.label { display: none; }
   .site-header-action { width: 40px; }
+  /* 패널을 버튼이 아니라 헤더 줄 전체에 맞춘다 — 버튼 기준 320px 은 375px 화면에서 왼쪽으로 넘친다. */
+  .site-header-main { position: relative; }
+  .site-header-notify { position: static; }
+  .site-header-notify-panel { left: var(--space-4); right: var(--space-4); width: auto; top: 100%; }
   .site-header-category-toggle-label { display: none; }
   .site-header-category-toggle { width: 40px; padding: 0; justify-content: center; }
 }
