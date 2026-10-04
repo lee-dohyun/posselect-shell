@@ -26,6 +26,24 @@ export const BADGE_MAX = 99;
 /** 안 읽은 개수를 다시 확인하는 주기. 실시간 채널(SSE/WebSocket) 없이 폴링으로 갱신한다. */
 export const UNREAD_POLL_INTERVAL_MS = 60_000;
 
+/**
+ * 알림을 눌러 다른 화면으로 넘어갈 때 읽음 요청을 기다려 주는 최대 시간.
+ * 기다리지 않고 바로 이동하면, 도착한 화면의 헤더가 읽음이 반영되기 전에 개수를 조회해 배지가 그대로 남는다.
+ */
+export const READ_BEFORE_NAVIGATE_TIMEOUT_MS = 1_500;
+
+/** 요청이 끝나거나(성공·실패 무관) 제한 시간이 지나면 풀린다 — 느린 응답이 화면 이동을 막지 않게 한다. */
+export function settleWithin(request: Promise<unknown>, timeoutMs: number): Promise<void> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(resolve, timeoutMs);
+    const done = () => {
+      clearTimeout(timer);
+      resolve();
+    };
+    request.then(done, done);
+  });
+}
+
 export function badgeLabel(unreadCount: number): string {
   return unreadCount > BADGE_MAX ? `${BADGE_MAX}+` : String(unreadCount);
 }

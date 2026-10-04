@@ -8,6 +8,7 @@ import {
   markRead,
   relativeTime,
   safeLink,
+  settleWithin,
 } from './notifications';
 
 const BASE = 'https://customer.posselect.com';
@@ -113,6 +114,38 @@ describe('notifications', () => {
       await expect(fetchInbox(BASE)).resolves.toBeNull();
       mockFetch(new TypeError('Failed to fetch'));
       await expect(fetchInbox(BASE)).resolves.toBeNull();
+    });
+  });
+
+  describe('settleWithin', () => {
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it('요청이 먼저 끝나면 바로 풀린다', async () => {
+      vi.useFakeTimers();
+      let done = false;
+      void settleWithin(Promise.resolve(true), 1500).then(() => {
+        done = true;
+      });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(done).toBe(true);
+    });
+
+    it('요청이 끝나지 않아도 제한 시간이 지나면 풀린다 — 이동이 무한정 막히지 않는다', async () => {
+      vi.useFakeTimers();
+      let done = false;
+      void settleWithin(new Promise<boolean>(() => {}), 1500).then(() => {
+        done = true;
+      });
+      await vi.advanceTimersByTimeAsync(1499);
+      expect(done).toBe(false);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(done).toBe(true);
+    });
+
+    it('요청이 실패(reject)해도 풀린다', async () => {
+      await expect(settleWithin(Promise.reject(new Error('x')), 1500)).resolves.toBeUndefined();
     });
   });
 
